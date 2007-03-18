@@ -1,5 +1,3 @@
-# TODO:
-# - how to break lines while many modules passing?
 # Conditional build:
 %bcond_without	dist_kernel	# allow non-distribution kernel
 %bcond_without	kernel		# don't build kernel modules
@@ -25,6 +23,7 @@ Epoch:		0
 License:	GPL v2
 Group:		Base/Kernel
 Source0:	ftp://61.56.86.122/cn/wlan/%{_rtlname}.zip
+# Source0-md5:	c5b1c7e0c094fa943a52e1a78117308b
 Patch0:		kernel-net-%{name}-2.6.20.patch
 URL:		http://www.realtek.com.tw/downloads/downloadsView.aspx?Langid=1&PNid=24&PFid=1&Level=6&Conn=5&DownTypeID=3&GetDown=false&Downloads=true
 %if %{with kernel}
@@ -86,7 +85,7 @@ tar xvzf stack.tar.gz
 
 %build
 %if %{with kernel}
-%build_kernel_modules -C ieee80211 -m ieee80211-rtl,ieee80211_crypt-rtl,ieee80211_crypt_ccmp-rtl,ieee80211_crypt_tkip-rtl,ieee80211_crypt_wep-rtl
+%build_kernel_modules -C ieee80211 -m ieee80211{-rtl,_crypt-rtl,_crypt_ccmp-rtl,_crypt_tkip-rtl,_crypt_wep-rtl}
 %build_kernel_modules -C beta-8187 -m r8187
 %endif
 
@@ -95,9 +94,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %if %{with kernel}
 cd ieee80211
-%install_kernel_modules -m ieee80211-rtl,ieee80211_crypt-rtl,ieee80211_crypt_ccmp-rtl,ieee80211_crypt_tkip-rtl,ieee80211_crypt_wep-rtl -d net
+%install_kernel_modules -d net -m ieee80211{-rtl,_crypt-rtl,_crypt_ccmp-rtl,_crypt_tkip-rtl,_crypt_wep-rtl}
 cd ../beta-8187
-%install_kernel_modules -m r8187 -d net
+%install_kernel_modules -d net -m r8187
 %endif
 
 %clean
