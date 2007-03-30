@@ -1,3 +1,4 @@
+#
 # Conditional build:
 %bcond_without	dist_kernel	# allow non-distribution kernel
 %bcond_without	kernel		# don't build kernel modules
@@ -61,8 +62,8 @@ Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie
 rtl8187.
 
 %package -n kernel%{_alt_kernel}-smp-net-rtl8187
-Summary:	Linux driver for WLAN cards based on rtl8187
-Summary(pl.UTF-8):	Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie rtl8187
+Summary:	Linux SMP driver for WLAN cards based on rtl8187
+Summary(pl.UTF-8):	Sterownik dla Linuksa SMP do kart bezprzewodowych opartych na układzie rtl8187
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
@@ -72,10 +73,10 @@ Requires(postun):	%releq_kernel_smp
 %endif
 
 %description -n kernel%{_alt_kernel}-smp-net-rtl8187
-This is a Linux driver for WLAN cards based on rtl8187.
+This is a Linux SMP driver for WLAN cards based on rtl8187.
 
 %description -n kernel%{_alt_kernel}-smp-net-rtl8187 -l pl.UTF-8
-Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie
+Sterownik dla Linuksa SMP do kart bezprzewodowych opartych na układzie
 rtl8187.
 
 %prep
