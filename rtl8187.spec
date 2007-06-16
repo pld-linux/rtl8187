@@ -1,9 +1,10 @@
 #
+# TODO:
+# - investigate other, never drivers on the SOURCE0 ftp
+#
 # Conditional build:
 %bcond_without	dist_kernel	# allow non-distribution kernel
 %bcond_without	kernel		# don't build kernel modules
-%bcond_without	up		# don't build UP module
-%bcond_without	smp		# don't build SMP module
 %bcond_with	verbose		# verbose build (V=1)
 
 %if %{without kernel}
@@ -13,7 +14,7 @@
 #
 # main package.
 #
-%define		_rel	0.1
+%define		_rel	1
 %define		_rtlname    rtl8187_linux_26.1010
 Summary:	Linux driver for WLAN cards based on rtl8187
 Summary(pl.UTF-8):	Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie rtl8187
@@ -50,8 +51,8 @@ Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
 %if %{with dist_kernel}
-%requires_releq_kernel_up
-Requires(postun):	%releq_kernel_up
+%requires_releq_kernel
+Requires(postun):	%releq_kernel
 %endif
 
 %description -n kernel%{_alt_kernel}-net-rtl8187
@@ -61,28 +62,11 @@ This is a Linux driver for WLAN cards based on rtl8187.
 Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie
 rtl8187.
 
-%package -n kernel%{_alt_kernel}-smp-net-rtl8187
-Summary:	Linux SMP driver for WLAN cards based on rtl8187
-Summary(pl.UTF-8):	Sterownik dla Linuksa SMP do kart bezprzewodowych opartych na układzie rtl8187
-Release:	%{_rel}@%{_kernel_ver_str}
-Group:		Base/Kernel
-Requires(post,postun):	/sbin/depmod
-%if %{with dist_kernel}
-%requires_releq_kernel_smp
-Requires(postun):	%releq_kernel_smp
-%endif
-
-%description -n kernel%{_alt_kernel}-smp-net-rtl8187
-This is a Linux SMP driver for WLAN cards based on rtl8187.
-
-%description -n kernel%{_alt_kernel}-smp-net-rtl8187 -l pl.UTF-8
-Sterownik dla Linuksa SMP do kart bezprzewodowych opartych na układzie
-rtl8187.
-
 %prep
 %setup -q -n %{_rtlname}.0622.2006
 tar xvzf drv.tar.gz
 tar xvzf stack.tar.gz
+%patch0 -p1
 
 %build
 %if %{with kernel}
@@ -109,22 +93,8 @@ rm -rf $RPM_BUILD_ROOT
 %postun	-n kernel%{_alt_kernel}-net-rtl8187
 %depmod %{_kernel_ver}
 
-%post	-n kernel%{_alt_kernel}-smp-net-rtl8187
-%depmod %{_kernel_ver}smp
-
-%postun	-n kernel%{_alt_kernel}-smp-net-rtl8187
-%depmod %{_kernel_ver}smp
-
 %if %{with kernel}
-%if %{with up} || %{without dist_kernel}
 %files -n kernel%{_alt_kernel}-net-rtl8187
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}/net/*.ko*
-%endif
-
-%if %{with smp} && %{with dist_kernel}
-%files -n kernel%{_alt_kernel}-smp-net-rtl8187
-%defattr(644,root,root,755)
-/lib/modules/%{_kernel_ver}smp/net/*.ko*
-%endif
 %endif
