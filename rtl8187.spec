@@ -1,6 +1,6 @@
 #
 # TODO:
-# - investigate other, newer drivers on the SOURCE0 ftp
+# - investigate 1025 driver on the SOURCE0 ftp
 #
 # Conditional build:
 %bcond_without	dist_kernel	# allow non-distribution kernel
