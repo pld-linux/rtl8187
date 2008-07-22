@@ -19,7 +19,7 @@
 Summary:	Linux driver for WLAN cards based on rtl8187
 Summary(pl.UTF-8):	Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie rtl8187
 Name:		rtl8187
-Version:	1.10
+Version:	1.24
 Release:	%{_rel}
 Epoch:		0
 License:	GPL v2
@@ -28,7 +28,7 @@ Group:		Base/Kernel
 Source0:	http://www.datanorth.net/~cuervo/rtl8187b/rtl8187b-modified-dist.tar.gz
 # Source0-md5:	66fca0a5dfd709e3167fb257adfe4e14
 #Patch0:		kernel-net-%{name}-2.6.20.patch
-Patch1:		rtl8187-kernel-2.6.26.patch
+Patch1:		rtl8187-kernel-2.6.24.patch
 #http://www.datanorth.net/~cuervo/rtl8187b/2.6.24.patch
 URL:		http://www.realtek.com.tw/downloads/downloadsView.aspx?Langid=1&PNid=24&PFid=1&Level=6&Conn=5&DownTypeID=3&GetDown=false&Downloads=true
 %if %{with kernel}
