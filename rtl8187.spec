@@ -15,7 +15,7 @@
 # main package.
 #
 %define		_rel	1
-%define		_rtlname    rtl8187_linux_26.1010
+#%define		_rtlname    rtl8187_linux_26.1010
 Summary:	Linux driver for WLAN cards based on rtl8187
 Summary(pl.UTF-8):	Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie rtl8187
 Name:		rtl8187
@@ -24,9 +24,12 @@ Release:	%{_rel}
 Epoch:		0
 License:	GPL v2
 Group:		Base/Kernel
-Source0:	ftp://61.56.86.122/cn/wlan/%{_rtlname}.zip
-# Source0-md5:	c5b1c7e0c094fa943a52e1a78117308b
-Patch0:		kernel-net-%{name}-2.6.20.patch
+#Source0:	ftp://61.56.86.122/cn/wlan/%{_rtlname}.tar.gz
+Source0:	http://www.datanorth.net/~cuervo/rtl8187b/rtl8187b-modified-dist.tar.gz
+# Source0-md5:	66fca0a5dfd709e3167fb257adfe4e14
+#Patch0:		kernel-net-%{name}-2.6.20.patch
+Patch1:		rtl8187-kernel-2.6.26.patch
+#http://www.datanorth.net/~cuervo/rtl8187b/2.6.24.patch
 URL:		http://www.realtek.com.tw/downloads/downloadsView.aspx?Langid=1&PNid=24&PFid=1&Level=6&Conn=5&DownTypeID=3&GetDown=false&Downloads=true
 %if %{with kernel}
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.14}
@@ -63,15 +66,17 @@ Sterownik dla Linuksa do kart bezprzewodowych opartych na układzie
 rtl8187.
 
 %prep
-%setup -q -n %{_rtlname}.0622.2006
-tar xvzf drv.tar.gz
-tar xvzf stack.tar.gz
-%patch0 -p1
+##%%setup -q -n %{_rtlname}
+%setup -q -n rtl8187b-modified
+#tar xvzf drv.tar.gz
+#tar xvzf stack.tar.gz
+#%%patch0 -p1
+%patch1 -p1
 
 %build
 %if %{with kernel}
 %build_kernel_modules -C ieee80211 -m ieee80211{-rtl,_crypt-rtl,_crypt_ccmp-rtl,_crypt_tkip-rtl,_crypt_wep-rtl}
-%build_kernel_modules -C beta-8187 -m r8187
+%build_kernel_modules -C rtl8187 -m r8187
 %endif
 
 %install
@@ -80,7 +85,7 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with kernel}
 cd ieee80211
 %install_kernel_modules -d net -m ieee80211{-rtl,_crypt-rtl,_crypt_ccmp-rtl,_crypt_tkip-rtl,_crypt_wep-rtl}
-cd ../beta-8187
+cd ../rtl8187
 %install_kernel_modules -d net -m r8187
 %endif
 
