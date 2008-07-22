@@ -1,0 +1,147 @@
+diff -ruBb rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/ieee80211_crypt_tkip.c rtl8187B_linux_24.6.1024.0822.2007/ieee80211/ieee80211_crypt_tkip.c
+--- rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/ieee80211_crypt_tkip.c	2007-08-22 08:21:55.000000000 +0100
++++ rtl8187B_linux_24.6.1024.0822.2007/ieee80211/ieee80211_crypt_tkip.c	2008-03-21 03:18:37.000000000 +0000
+@@ -405,9 +405,7 @@
+ 	crypto_cipher_encrypt(tkey->tfm_arc4, &sg, &sg, len + 4);
+       #else
+ 	crypto_blkcipher_setkey(tkey->tx_tfm_arc4, rc4key, 16);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = len + 4;
++	sg_init_one(&sg, pos, len + 4);
+ 	ret= crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+       #endif
+ 	tkey->tx_iv16++;
+@@ -496,9 +494,7 @@
+ 	crypto_cipher_decrypt(tkey->tfm_arc4, &sg, &sg, plen + 4);
+ 	#else
+ 	crypto_blkcipher_setkey(tkey->rx_tfm_arc4, rc4key, 16);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = plen + 4;
++	sg_init_one(&sg, pos, plen + 4);
+ 	if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4)) {
+ 		if (net_ratelimit()) {
+ 			printk(KERN_DEBUG ": TKIP: failed to decrypt "
+@@ -601,13 +597,9 @@
+                 printk(KERN_WARNING "michael_mic: tfm_michael == NULL\n");
+                 return -1;
+         }
+-        sg[0].page = virt_to_page(hdr);
+-        sg[0].offset = offset_in_page(hdr);
+-        sg[0].length = 16;
++	sg_init_one(&(sg[0]), hdr, 16);
+ 
+-        sg[1].page = virt_to_page(data);
+-        sg[1].offset = offset_in_page(data);
+-        sg[1].length = data_len;
++        sg_init_one(&(sg[1]), data, data_len);
+ 
+         if (crypto_hash_setkey(tfm_michael, key, 8))
+                 return -1;
+diff -ruBb rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/ieee80211_crypt_wep.c rtl8187B_linux_24.6.1024.0822.2007/ieee80211/ieee80211_crypt_wep.c
+--- rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/ieee80211_crypt_wep.c	2007-08-22 08:21:54.000000000 +0100
++++ rtl8187B_linux_24.6.1024.0822.2007/ieee80211/ieee80211_crypt_wep.c	2008-03-21 03:20:04.000000000 +0000
+@@ -199,9 +199,7 @@
+ 	return 0;
+ 	#else
+ 	crypto_blkcipher_setkey(wep->tx_tfm, key, klen);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = len + 4;
++	sg_init_one(&sg, pos, len + 4);
+ 	return crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+ 	#endif
+ }
+@@ -251,9 +249,7 @@
+ 	crypto_cipher_decrypt(wep->tfm, &sg, &sg, plen + 4);
+ #else
+ 	crypto_blkcipher_setkey(wep->rx_tfm, key, klen);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = plen + 4;	
++	sg_init_one(&sg, pos, plen + 4);
+ 	if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4))
+ 		return -7;
+ #endif 
+diff -ruBb rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/ieee80211_softmac.c rtl8187B_linux_24.6.1024.0822.2007/ieee80211/ieee80211_softmac.c
+--- rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/ieee80211_softmac.c	2007-08-22 08:21:55.000000000 +0100
++++ rtl8187B_linux_24.6.1024.0822.2007/ieee80211/ieee80211_softmac.c	2008-03-21 03:27:37.000000000 +0000
+@@ -429,7 +429,6 @@
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_softmac_scan_wq(struct work_struct *work)
+ {
+-	struct delayed_work *dwork = container_of(work, struct delayed_work, work);
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, softmac_scan_wq);
+ #else
+ void ieee80211_softmac_scan_wq(struct ieee80211_device *ieee)
+@@ -1663,7 +1662,7 @@
+ 	struct ieee80211_hdr_3addr *header = (struct ieee80211_hdr_3addr *) skb->data;
+ 	u16 errcode;
+ 	u8* challenge;
+-	int chlen;
++	int chlen = 0;
+ 	int aid;
+ 	struct ieee80211_assoc_response_frame *assoc_resp;
+ 	struct ieee80211_info_element *info_element;
+@@ -2249,7 +2248,6 @@
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_associate_retry_wq(struct work_struct *work)
+ {
+-	struct delayed_work *dwork = container_of(work, struct delayed_work, work);
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, associate_retry_wq);
+ #else
+ void ieee80211_associate_retry_wq(struct ieee80211_device *ieee)
+diff -ruBb rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/Makefile rtl8187B_linux_24.6.1024.0822.2007/ieee80211/Makefile
+--- rtl8187B_linux_24.6.1024.0822.2007.orig/ieee80211/Makefile	2007-08-22 08:49:26.000000000 +0100
++++ rtl8187B_linux_24.6.1024.0822.2007/ieee80211/Makefile	2008-03-21 02:54:00.000000000 +0000
+@@ -1,6 +1,6 @@
+ EXTRA_CFLAGS += -I$(TOPDIR)/drivers/net/wireless
+ EXTRA_CFLAGS += -O2
+-CFLAGS += -DJACKSON_NEW_8187 -DJACKSON_NEW_RX
++EXTRA_CFLAGS += -DJACKSON_NEW_8187 -DJACKSON_NEW_RX
+ 
+ CC = gcc
+ 
+diff -ruBb rtl8187B_linux_24.6.1024.0822.2007.orig/rtl8187/Makefile rtl8187B_linux_24.6.1024.0822.2007/rtl8187/Makefile
+--- rtl8187B_linux_24.6.1024.0822.2007.orig/rtl8187/Makefile	2007-08-22 08:21:55.000000000 +0100
++++ rtl8187B_linux_24.6.1024.0822.2007/rtl8187/Makefile	2008-03-21 02:54:45.000000000 +0000
+@@ -5,8 +5,8 @@
+ EXTRA_CFLAGS += -O2
+ EXTRA_CFLAGS += -mhard-float -DCONFIG_FORCE_HARD_FLOAT=y
+ #ieee80211-r8180-objs := ieee80211.o ieee80211_rx.o ieee80211_tx.o ieee80211_wx.o ieee80211_module.o
+-CFLAGS += -DJACKSON_NEW_8187 -DJACKSON_NEW_RX
+-CFLAGS += -DTHOMAS_BEACON -DTHOMAS_TASKLET -DTHOMAS_SKB
++EXTRA_CFLAGS += -DJACKSON_NEW_8187 -DJACKSON_NEW_RX
++EXTRA_CFLAGS += -DTHOMAS_BEACON -DTHOMAS_TASKLET -DTHOMAS_SKB
+ 
+ #ieee80211_crypt-r8180 := ieee80211_crypt-r8180.o
+ 
+diff -ruBb rtl8187B_linux_24.6.1024.0822.2007.orig/rtl8187/r8187_core.c rtl8187B_linux_24.6.1024.0822.2007/rtl8187/r8187_core.c
+--- rtl8187B_linux_24.6.1024.0822.2007.orig/rtl8187/r8187_core.c	2007-08-22 08:54:58.000000000 +0100
++++ rtl8187B_linux_24.6.1024.0822.2007/rtl8187/r8187_core.c	2008-03-21 04:01:58.000000000 +0000
+@@ -618,13 +618,13 @@
+ void rtl8180_proc_module_init(void)
+ {	
+ 	DMESG("Initializing proc filesystem");
+-	rtl8180_proc=create_proc_entry(RTL8187_MODULE_NAME, S_IFDIR, proc_net);
++	rtl8180_proc=create_proc_entry(RTL8187_MODULE_NAME, S_IFDIR, init_net.proc_net);
+ }
+ 
+ 
+ void rtl8180_proc_module_remove(void)
+ {
+-	remove_proc_entry(RTL8187_MODULE_NAME, proc_net);
++	remove_proc_entry(RTL8187_MODULE_NAME, init_net.proc_net);
+ }
+ 
+ 
+@@ -4038,8 +4038,6 @@
+ 
+ 	dev = alloc_ieee80211(sizeof(struct r8180_priv));
+ 	
+-	SET_MODULE_OWNER(dev);
+-
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0)
+ 	usb_set_intfdata(intf, dev);	
+ 	SET_NETDEV_DEV(dev, &intf->dev);
